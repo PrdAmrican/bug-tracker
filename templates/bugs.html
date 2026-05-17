@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Bugs – Bug Tracker{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">Bugs</h2>
+    <a href="{{ url_for('bug_new') }}" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> Report Bug
+    </a>
+</div>
+
+<!-- filters -->
+<form method="get" class="row g-2 mb-4">
+    <div class="col-auto">
+        <select name="status" class="form-select form-select-sm">
+            <option value="">All Statuses</option>
+            {% for s in ["open", "in_progress", "resolved", "closed"] %}
+            <option value="{{ s }}" {{ 'selected' if current_status == s }}>{{ s | replace('_', ' ') | title }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-auto">
+        <select name="severity" class="form-select form-select-sm">
+            <option value="">All Severities</option>
+            {% for s in ["low", "medium", "high", "critical"] %}
+            <option value="{{ s }}" {{ 'selected' if current_severity == s }}>{{ s | title }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-auto">
+        <select name="assignee" class="form-select form-select-sm">
+            <option value="">All Assignees</option>
+            {% for t in testers %}
+            <option value="{{ t.id }}" {{ 'selected' if current_assignee == t.id|string }}>{{ t.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-auto">
+        <select name="sort" class="form-select form-select-sm">
+            <option value="newest" {{ 'selected' if current_sort == 'newest' }}>Newest First</option>
+            <option value="oldest" {{ 'selected' if current_sort == 'oldest' }}>Oldest First</option>
+        </select>
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-sm btn-outline-secondary">Filter</button>
+        <a href="{{ url_for('bug_list') }}" class="btn btn-sm btn-outline-secondary">Clear</a>
+    </div>
+</form>
+
+<!-- bug table -->
+{% if bugs %}
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>#</th>
+                <th>Title</th>
+                <th>Severity</th>
+                <th>Status</th>
+                <th>Reporter</th>
+                <th>Assignee</th>
+                <th>Created</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for bug in bugs %}
+            <tr class="bug-row" onclick="location.href='{{ url_for('bug_detail', bug_id=bug.id) }}'">
+                <td>{{ bug.id }}</td>
+                <td>{{ bug.title }}</td>
+                <td><span class="badge badge-severity-{{ bug.severity }} text-capitalize">{{ bug.severity }}</span></td>
+                <td><span class="badge badge-status-{{ bug.status }}">{{ bug.status | replace('_', ' ') | title }}</span></td>
+                <td>{{ bug.reporter.name if bug.reporter else '–' }}</td>
+                <td>{{ bug.assignee.name if bug.assignee else '–' }}</td>
+                <td class="text-muted small">{{ bug.created_at.strftime('%Y-%m-%d') }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="text-center text-muted py-5">
+    <i class="bi bi-inbox display-4"></i>
+    <p class="mt-2">No bugs match your filters.</p>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,63 @@
+:root {
+    --severity-low: #198754;
+    --severity-medium: #ffc107;
+    --severity-high: #fd7e14;
+    --severity-critical: #dc3545;
+}
+
+body {
+    background-color: #f4f6f9;
+}
+
+.navbar {
+    box-shadow: 0 2px 4px rgba(0,0,0,.08);
+}
+
+.stat-card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    transition: transform 0.15s;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+}
+
+.stat-card .display-6 {
+    font-weight: 700;
+}
+
+.badge-severity-low       { background-color: var(--severity-low); }
+.badge-severity-medium    { background-color: var(--severity-medium); color: #000; }
+.badge-severity-high      { background-color: var(--severity-high); color: #000; }
+.badge-severity-critical  { background-color: var(--severity-critical); }
+
+.badge-status-open        { background-color: #0d6efd; }
+.badge-status-in_progress { background-color: #6f42c1; }
+.badge-status-resolved    { background-color: #198754; }
+.badge-status-closed      { background-color: #6c757d; }
+
+.bug-row:hover {
+    background-color: #e9ecef;
+    cursor: pointer;
+}
+
+.attachment-thumb {
+    max-width: 120px;
+    max-height: 90px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid #dee2e6;
+}
+
+.chart-bar {
+    display: inline-block;
+    min-width: 28px;
+    text-align: center;
+    color: #fff;
+    font-size: 0.85rem;
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin-right: 4px;
+}

@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit Bug #' ~ bug.id if bug else 'Report Bug' }} – Bug Tracker{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">{{ 'Edit Bug #' ~ bug.id if bug else 'Report a Bug' }}</h2>
+
+<div class="card">
+    <div class="card-body">
+        <form method="post">
+            <div class="mb-3">
+                <label for="title" class="form-label">Title <span class="text-danger">*</span></label>
+                <input type="text" name="title" id="title" class="form-control" required
+                       value="{{ bug.title if bug else '' }}" placeholder="Short summary of the bug">
+            </div>
+
+            <div class="mb-3">
+                <label for="description" class="form-label">Description</label>
+                <textarea name="description" id="description" class="form-control" rows="5"
+                          placeholder="Steps to reproduce, expected vs actual behaviour…">{{ bug.description if bug else '' }}</textarea>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <label for="severity" class="form-label">Severity</label>
+                    <select name="severity" id="severity" class="form-select">
+                        {% for s in ["low", "medium", "high", "critical"] %}
+                        <option value="{{ s }}" {{ 'selected' if bug and bug.severity == s }}>{{ s | title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% if bug %}
+                <div class="col-md-6">
+                    <label for="status" class="form-label">Status</label>
+                    <select name="status" id="status" class="form-select">
+                        {% for s in ["open", "in_progress", "resolved", "closed"] %}
+                        <option value="{{ s }}" {{ 'selected' if bug.status == s }}>{{ s | replace('_', ' ') | title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <label for="device" class="form-label">Device</label>
+                    <div class="input-group">
+                        <select name="device" id="device" class="form-select">
+                            <option value="">– select device –</option>
+                            {% for d in devices %}
+                            <option value="{{ d.id }}" {{ 'selected' if bug and bug.device_id == d.id }}>{{ d.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="button" class="btn btn-outline-secondary" onclick="addLookup('device', '/api/devices')" title="Add new device">
+                            <i class="bi bi-plus"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label for="sw_build" class="form-label">SW Build</label>
+                    <div class="input-group">
+                        <select name="sw_build" id="sw_build" class="form-select">
+                            <option value="">– select build –</option>
+                            {% for b in sw_builds %}
+                            <option value="{{ b.id }}" {{ 'selected' if bug and bug.sw_build_id == b.id }}>{{ b.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="button" class="btn btn-outline-secondary" onclick="addLookup('sw_build', '/api/sw_builds')" title="Add new build">
+                            <i class="bi bi-plus"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <label for="mode" class="form-label">Mode</label>
+                    <div class="input-group">
+                        <select name="mode" id="mode" class="form-select">
+                            <option value="">– select mode –</option>
+                            {% for m in modes %}
+                            <option value="{{ m.id }}" {{ 'selected' if bug and bug.mode_id == m.id }}>{{ m.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="button" class="btn btn-outline-secondary" onclick="addLookup('mode', '/api/modes')" title="Add new mode">
+                            <i class="bi bi-plus"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label for="tg" class="form-label">TG</label>
+                    <input type="text" name="tg" id="tg" class="form-control"
+                           value="{{ bug.tg if bug and bug.tg else '' }}" placeholder="Enter TG">
+                </div>
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label for="reported_by" class="form-label">Reported By</label>
+                    <select name="reported_by" id="reported_by" class="form-select">
+                        <option value="">– select tester –</option>
+                        {% for t in testers %}
+                        <option value="{{ t.id }}" {{ 'selected' if bug and bug.reported_by_id == t.id }}>{{ t.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label for="assigned_to" class="form-label">Assign To</label>
+                    <select name="assigned_to" id="assigned_to" class="form-select">
+                        <option value="">– unassigned –</option>
+                        {% for t in testers %}
+                        <option value="{{ t.id }}" {{ 'selected' if bug and bug.assigned_to_id == t.id }}>{{ t.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-check-lg"></i> {{ 'Update Bug' if bug else 'Submit Bug' }}
+            </button>
+            <a href="{{ url_for('bug_detail', bug_id=bug.id) if bug else url_for('bug_list') }}" class="btn btn-outline-secondary ms-2">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function addLookup(fieldId, apiUrl) {
+    const name = prompt('Enter new name:');
+    if (!name || !name.trim()) return;
+
+    const formData = new FormData();
+    formData.append('name', name.trim());
+
+    fetch(apiUrl, { method: 'POST', body: formData })
+        .then(resp => {
+            if (!resp.ok) return resp.json().then(d => { throw new Error(d.error); });
+            return resp.json();
+        })
+        .then(data => {
+            const select = document.getElementById(fieldId);
+            const option = new Option(data.name, data.id, true, true);
+            select.add(option);
+        })
+        .catch(err => alert(err.message));
+}
+</script>
+{% endblock %}
